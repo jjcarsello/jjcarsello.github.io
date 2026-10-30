@@ -27,9 +27,12 @@ const {
   blur = 0,
 } = Astro.props;
 const pageTitle = title ? `${title} · ${site.name}` : site.name;
+// CSS version of the background, shown until WebGL has drawn (and as the fallback
+// without WebGL). Photos get the same light bottom darkening as the shader.
 const bgImage = bgColor
   ? `linear-gradient(${bgColor}, ${bgColor})`
-  : background && `url('${background}')`;
+  : background &&
+    `linear-gradient(180deg, rgba(10, 18, 36, 0), rgba(10, 18, 36, 0.15)), url('${background}') center / cover no-repeat`;
 const bodyStyle = [bgImage && `--bg-image: ${bgImage}`, accent && `--accent: ${accent}`]
   .filter(Boolean)
   .join('; ');
@@ -48,6 +51,8 @@ const bodyStyle = [bgImage && `--bg-image: ${bgImage}`, accent && `--accent: ${a
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
+    {/* Start downloading the background photo right away, before any scripts run */}
+    {!bgColor && background && <link rel="preload" as="image" href={background} />}
     <ClientRouter />
   </head>
   <body style={bodyStyle} data-bg={background} data-bg-color={bgColor} data-rotate={rotate ? 'on' : 'off'} data-blur={blur}>

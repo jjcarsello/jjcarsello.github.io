@@ -373,6 +373,10 @@ export function initLens(canvas: HTMLCanvasElement): Lens | null {
   let fade = 1;
   let fadeStart = 0;
   let currentUrl: string | undefined;
+  // Stay hidden (the CSS backdrop shows the same photo) until the first real
+  // background has loaded, so visitors never see the stand-in scene flash by
+  let ready = false;
+  let shown = false;
 
   const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
   let scroll = window.scrollY;
@@ -448,9 +452,13 @@ export function initLens(canvas: HTMLCanvasElement): Lens | null {
     raf = 0;
     let animating = now < followUntil;
 
+    // Before the first visible frame everything starts at its final value; after
+    // that, ease (unless the visitor prefers reduced motion)
+    const snap = reduceMotion || !shown;
+
     // Ease toward the real scroll position so the glass glides rather than snaps
     const target = window.scrollY;
-    scroll = reduceMotion ? target : scroll + (target - scroll) * 0.12;
+    scroll = snap ? target : scroll + (target - scroll) * 0.12;
     if (Math.abs(target - scroll) < 0.5) scroll = target;
     else animating = true;
 
@@ -464,15 +472,15 @@ export function initLens(canvas: HTMLCanvasElement): Lens | null {
     const closeDistance = Math.max(Math.min(window.innerHeight * 1.2, maxScroll), 1);
     // Pages with rotation off settle the glass back to facing you
     const closeTarget = rotate ? Math.min(scroll / closeDistance, 1) : 0;
-    close = reduceMotion ? closeTarget : close + (closeTarget - close) * 0.25;
+    close = snap ? closeTarget : close + (closeTarget - close) * 0.25;
     if (Math.abs(closeTarget - close) < 0.001) close = closeTarget;
     else animating = true;
 
-    blur = reduceMotion ? blurTarget : blur + (blurTarget - blur) * 0.15;
+    blur = snap ? blurTarget : blur + (blurTarget - blur) * 0.15;
     if (Math.abs(blurTarget - blur) < 0.01) blur = blurTarget;
     else animating = true;
 
-    wash = reduceMotion ? washTarget : wash + (washTarget - wash) * 0.15;
+    wash = snap ? washTarget : wash + (washTarget - wash) * 0.15;
     if (Math.abs(washTarget - wash) < 0.005) wash = washTarget;
     else animating = true;
 
@@ -508,7 +516,10 @@ export function initLens(canvas: HTMLCanvasElement): Lens | null {
     // Unbind so pass 1 never renders into a texture that's also bound for reading
     gl!.bindTexture(gl!.TEXTURE_2D, null);
 
-    canvas.classList.add('on');
+    if (ready) {
+      canvas.classList.add('on');
+      shown = true;
+    }
     if (animating) requestRender();
   }
 
@@ -523,9 +534,11 @@ export function initLens(canvas: HTMLCanvasElement): Lens | null {
   }
 
   function crossfadeTo(next: Layer) {
-    a = fade < 0.5 ? a : b;
+    ready = true;
+    // The very first background appears directly; later page changes crossfade
+    a = shown ? (fade < 0.5 ? a : b) : next;
     b = next;
-    fade = 0;
+    fade = shown ? 0 : 1;
     fadeStart = performance.now();
     requestRender();
   }

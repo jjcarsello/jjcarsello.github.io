@@ -9,7 +9,7 @@ thumbnail: /backgrounds/astro_photo.webp
 links:
   - label: Source
     href: https://github.com/jjcarsello/jjcarsello.github.io
-order: 1
+order: 2
 ---
 
 ## Overview

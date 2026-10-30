@@ -37,15 +37,15 @@ body {
   padding: 0 16px;
 }
 
-/* Fixed photo layer: dark wash for legibility, then the photo, then an
-   Illini-colored gradient that shows if the image is missing. */
+/* Fixed CSS version of the page background (set per page in Base.astro), shown
+   until the WebGL layer has drawn, over an Illini-colored gradient that shows if
+   the image is missing. */
 .backdrop {
   position: fixed;
   inset: 0;
   z-index: -2;
   background:
-    linear-gradient(180deg, rgba(10, 18, 36, 0.35), rgba(10, 18, 36, 0.65)),
-    var(--bg-image) center / cover no-repeat,
+    var(--bg-image),
     radial-gradient(circle at 20% 20%, rgba(255, 95, 5, 0.55), transparent 50%),
     radial-gradient(circle at 80% 70%, rgba(80, 140, 255, 0.45), transparent 55%),
     linear-gradient(135deg, #13294b, #0b1730);

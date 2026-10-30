@@ -9,7 +9,7 @@ accent: "#13294b"
 links:
   - label: GitHub
     href: https://github.com/jjcarsello
-order: 2
+order: 1
 draft: false
 ---
 
