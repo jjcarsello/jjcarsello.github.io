@@ -1,0 +1,65 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import { site } from '../site';
+
+const projects = (await getCollection('projects', ({ data }) => !data.draft)).sort(
+  (a, b) => a.data.order - b.data.order || b.data.date.valueOf() - a.data.date.valueOf(),
+);
+const allTags = [...new Set(projects.flatMap((p) => p.data.tags))].sort();
+---
+
+<Base>
+  <section class="hero glass">
+    <p class="eyebrow">Portfolio</p>
+    <h1>{site.name}</h1>
+    <p class="tagline">{site.tagline}</p>
+    <p>{site.intro}</p>
+  </section>
+
+  <section id="projects" class="section">
+    <div class="section-head">
+      <h2>Projects</h2>
+      {
+        allTags.length > 1 && (
+          <div class="filters" role="group" aria-label="Filter projects by tag">
+            <button class="chip glass active" data-filter="all">All</button>
+            {allTags.map((tag) => (
+              <button class="chip glass" data-filter={tag}>{tag}</button>
+            ))}
+          </div>
+        )
+      }
+    </div>
+    <div class="grid">
+      {projects.map((project) => <ProjectCard project={project} />)}
+    </div>
+  </section>
+
+  <section id="contact" class="section contact glass">
+    <h2>Get in touch</h2>
+    <div class="link-row">
+      {site.links.map((link) => <a class="button glass" href={link.href}>{link.label}</a>)}
+    </div>
+  </section>
+</Base>
+
+<script>
+  function setupFilters() {
+    const chips = document.querySelectorAll<HTMLButtonElement>('.chip');
+    const cards = document.querySelectorAll<HTMLElement>('.card');
+    chips.forEach((chip) => {
+      chip.addEventListener('click', () => {
+        const filter = chip.dataset.filter!;
+        chips.forEach((c) => c.classList.toggle('active', c === chip));
+        cards.forEach((card) => {
+          const tags = card.dataset.tags?.split(',') ?? [];
+          card.hidden = filter !== 'all' && !tags.includes(filter);
+        });
+      });
+    });
+  }
+  // Re-run after view-transition navigations, not just the first load
+  document.addEventListener('astro:page-load', setupFilters);
+</script>

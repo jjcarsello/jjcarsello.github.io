@@ -1,0 +1,33 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+}
+
+const { project } = Astro.props;
+const { title, summary, tags, thumbnail, accent, date } = project.data;
+---
+
+<a
+  href={`/projects/${project.id}/`}
+  class="card glass"
+  style={`--accent: ${accent}`}
+  data-tags={tags.join(',')}
+>
+  <div class="card-thumb" transition:name={`thumb-${project.id}`}>
+    {thumbnail ? <img src={thumbnail} alt="" loading="lazy" /> : <span>{title.charAt(0)}</span>}
+  </div>
+  <div class="card-body">
+    <h3 transition:name={`title-${project.id}`}>{title}</h3>
+    <p>{summary}</p>
+    <div class="card-meta">
+      <ul class="tags">
+        {tags.map((tag) => <li>{tag}</li>)}
+      </ul>
+      <time datetime={date.toISOString()}>
+        {date.toLocaleDateString('en-US', { month: 'short', year: 'numeric', timeZone: 'UTC' })}
+      </time>
+    </div>
+  </div>
+</a>

@@ -1,0 +1,422 @@
+:root {
+  --illini-orange: #ff5f05;
+  --illini-blue: #13294b;
+  --accent: var(--illini-orange);
+  --text: #f5f7fb;
+  --text-muted: rgba(245, 247, 251, 0.72);
+  --glass-bg: rgba(255, 255, 255, 0.1);
+  --glass-bg-hover: rgba(255, 255, 255, 0.16);
+  --glass-border: rgba(255, 255, 255, 0.22);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.28);
+  --glass-blur: blur(18px) saturate(140%);
+  --bg-image: none;
+  --radius: 20px;
+  --max-width: 1100px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: var(--text);
+  background: var(--illini-blue);
+  line-height: 1.6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 16px;
+}
+
+/* Fixed photo layer: dark wash for legibility, then the photo, then an
+   Illini-colored gradient that shows if the image is missing. */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background:
+    linear-gradient(180deg, rgba(10, 18, 36, 0.35), rgba(10, 18, 36, 0.65)),
+    var(--bg-image) center / cover no-repeat,
+    radial-gradient(circle at 20% 20%, rgba(255, 95, 5, 0.55), transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(80, 140, 255, 0.45), transparent 55%),
+    linear-gradient(135deg, #13294b, #0b1730);
+}
+
+/* WebGL reeded-glass layer; fades in over .backdrop once it has drawn */
+.lens {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+  pointer-events: none;
+}
+
+.lens.on {
+  opacity: 1;
+}
+
+/* Once the WebGL layer is running it draws the liquid glass behind every .glass
+   element itself, so the CSS frosting steps aside. Without WebGL this never
+   matches and the CSS glass above stays as the fallback. */
+.lens.on ~ * {
+  --glass-bg: transparent;
+  --glass-bg-hover: rgba(255, 255, 255, 0.05);
+  --glass-border: transparent;
+  --glass-blur: none;
+}
+
+/* The sticky nav floats over page content, which WebGL can't see, so it keeps a
+   CSS blur to hide the text scrolling underneath */
+.lens.on ~ .nav {
+  --glass-blur: blur(14px);
+}
+
+a {
+  color: inherit;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.2;
+  margin: 0 0 0.5em;
+}
+
+main,
+.nav,
+.footer {
+  width: 100%;
+  max-width: var(--max-width);
+}
+
+/* ---------- Glass ---------- */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  box-shadow: var(--glass-shadow);
+}
+
+/* ---------- Nav ---------- */
+.nav {
+  position: sticky;
+  top: 16px;
+  z-index: 10;
+  margin: 16px 0 32px;
+  padding: 12px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.nav-brand {
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.nav nav {
+  display: flex;
+  gap: 20px;
+}
+
+.nav nav a {
+  text-decoration: none;
+  color: var(--text-muted);
+  transition: color 0.2s;
+}
+
+.nav nav a:hover {
+  color: var(--text);
+}
+
+/* ---------- Hero ---------- */
+.hero {
+  padding: clamp(28px, 6vw, 64px);
+  margin-bottom: 48px;
+}
+
+.hero h1 {
+  font-size: clamp(2.4rem, 7vw, 4.2rem);
+  letter-spacing: -0.02em;
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--accent);
+  margin: 0 0 8px;
+}
+
+.tagline {
+  font-size: 1.15rem;
+  color: var(--text-muted);
+  margin-top: 0;
+}
+
+/* ---------- Sections ---------- */
+.section {
+  margin-bottom: 48px;
+  scroll-margin-top: 100px;
+}
+
+.section-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.section-head h2 {
+  margin: 0;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  font: inherit;
+  font-size: 0.85rem;
+  color: var(--text);
+  padding: 6px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.chip:hover {
+  background: var(--glass-bg-hover);
+}
+
+.chip.active {
+  background: rgba(255, 95, 5, 0.35);
+  border-color: rgba(255, 95, 5, 0.7);
+}
+
+/* ---------- Cards ---------- */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: 20px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  text-decoration: none;
+  transition: transform 0.25s ease, background 0.25s, box-shadow 0.25s;
+}
+
+.card:hover,
+.card:focus-visible {
+  transform: translateY(-4px);
+  background: var(--glass-bg-hover);
+  box-shadow: var(--glass-shadow), 0 0 0 1px var(--accent), 0 12px 40px -8px var(--accent);
+}
+
+.card[hidden] {
+  display: none;
+}
+
+.card-thumb {
+  aspect-ratio: 16 / 9;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, var(--accent), rgba(255, 255, 255, 0.05));
+  font-size: 3rem;
+  font-weight: 700;
+  overflow: hidden;
+}
+
+.card-thumb img,
+.project-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.card-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.card-body p {
+  color: var(--text-muted);
+  margin: 0 0 16px;
+  flex: 1;
+}
+
+.card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.tags {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tags li {
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  font-size: 0.78rem;
+}
+
+/* ---------- Buttons ---------- */
+.link-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.button {
+  padding: 10px 20px;
+  border-radius: 999px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.button:hover {
+  background: var(--glass-bg-hover);
+  border-color: var(--accent);
+}
+
+.contact {
+  padding: clamp(24px, 5vw, 48px);
+  text-align: center;
+}
+
+.contact .link-row {
+  justify-content: center;
+}
+
+/* ---------- Project page ---------- */
+.project {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-bottom: 48px;
+}
+
+.back {
+  text-decoration: none;
+  color: var(--text-muted);
+  align-self: flex-start;
+}
+
+.back:hover {
+  color: var(--text);
+}
+
+.project-header {
+  padding: clamp(24px, 5vw, 48px);
+  border-top: 3px solid var(--accent);
+}
+
+.project-header h1 {
+  font-size: clamp(2rem, 6vw, 3.2rem);
+}
+
+.project-thumb {
+  aspect-ratio: 16 / 9;
+  border-radius: calc(var(--radius) - 6px);
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.prose {
+  padding: clamp(24px, 5vw, 48px);
+}
+
+.prose > :first-child {
+  margin-top: 0;
+}
+
+.prose h2 {
+  margin-top: 1.6em;
+}
+
+.prose img {
+  max-width: 100%;
+  border-radius: 12px;
+}
+
+.prose a {
+  color: var(--accent);
+}
+
+.prose code {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 0.9em;
+}
+
+.prose pre {
+  background: rgba(0, 0, 0, 0.4) !important;
+  padding: 16px;
+  border-radius: 12px;
+  overflow-x: auto;
+}
+
+/* ---------- Footer ---------- */
+.footer {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  padding: 24px 0 32px;
+  margin-top: auto;
+}
+
+@media (max-width: 520px) {
+  .nav {
+    flex-direction: column;
+    gap: 6px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .card {
+    transition: none;
+  }
+}

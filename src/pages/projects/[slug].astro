@@ -1,0 +1,60 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { site } from '../../site';
+
+export async function getStaticPaths() {
+  const projects = await getCollection('projects', ({ data }) => !data.draft);
+  return projects.map((project) => ({ params: { slug: project.id }, props: { project } }));
+}
+
+const { project } = Astro.props;
+const { title, summary, tags, thumbnail, background, bgColor, blur, accent, links, date } =
+  project.data;
+const { Content } = await render(project);
+---
+
+{/* Projects sit behind one still pane: their own photo if they set `background`,
+    otherwise a solid colour (their `bgColor`, or the site-wide project colour) */}
+<Base
+  title={title}
+  description={summary}
+  background={background ?? ''}
+  bgColor={background ? undefined : (bgColor ?? site.projectColor)}
+  accent={accent}
+  rotate={false}
+  blur={blur}
+>
+  <article class="project">
+    <a href="/#projects" class="back">← All projects</a>
+
+    <header class="project-header glass">
+      {
+        thumbnail && (
+          <div class="project-thumb" transition:name={`thumb-${project.id}`}>
+            <img src={thumbnail} alt="" />
+          </div>
+        )
+      }
+      <h1 transition:name={`title-${project.id}`}>{title}</h1>
+      <p class="tagline">{summary}</p>
+      <div class="card-meta">
+        <ul class="tags">{tags.map((tag) => <li>{tag}</li>)}</ul>
+        <time datetime={date.toISOString()}>
+          {date.toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' })}
+        </time>
+      </div>
+      {
+        links.length > 0 && (
+          <div class="link-row">
+            {links.map((link) => <a class="button glass" href={link.href}>{link.label}</a>)}
+          </div>
+        )
+      }
+    </header>
+
+    <div class="prose glass">
+      <Content />
+    </div>
+  </article>
+</Base>

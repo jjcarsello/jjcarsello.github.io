@@ -1,0 +1,90 @@
+---
+import { ClientRouter } from 'astro:transitions';
+import { site } from '../site';
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+  // Photo behind the glass; an empty string uses the generic stand-in scene
+  background?: string;
+  // Solid colour (#rrggbb) instead of a photo; wins over background when set
+  bgColor?: string;
+  accent?: string;
+  // Whether scrolling turns the background glass; off leaves one still pane
+  rotate?: boolean;
+  // Background blur, 0 (sharp) to ~5 (very soft)
+  blur?: number;
+}
+
+const {
+  title,
+  description = site.intro,
+  background = site.background,
+  bgColor,
+  accent,
+  rotate = site.rotateGlass,
+  blur = 0,
+} = Astro.props;
+const pageTitle = title ? `${title} · ${site.name}` : site.name;
+const bgImage = bgColor
+  ? `linear-gradient(${bgColor}, ${bgColor})`
+  : background && `url('${background}')`;
+const bodyStyle = [bgImage && `--bg-image: ${bgImage}`, accent && `--accent: ${accent}`]
+  .filter(Boolean)
+  .join('; ');
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <title>{pageTitle}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <ClientRouter />
+  </head>
+  <body style={bodyStyle} data-bg={background} data-bg-color={bgColor} data-rotate={rotate ? 'on' : 'off'} data-blur={blur}>
+    <div class="backdrop" aria-hidden="true"></div>
+    <canvas class="lens" transition:persist="lens" aria-hidden="true"></canvas>
+
+    <header class="nav glass">
+      <a href="/" class="nav-brand">{site.name}</a>
+      <nav>
+        <a href="/#projects">Projects</a>
+        <a href="/#contact">Contact</a>
+      </nav>
+    </header>
+
+    <main>
+      <slot />
+    </main>
+
+    <footer class="footer">
+      © {new Date().getFullYear()} {site.name}
+    </footer>
+
+    <script>
+      import { initLens, type Lens } from '../scripts/lens';
+
+      let lens: Lens | null | undefined;
+      // The canvas persists across view transitions; just point it at each page's image
+      document.addEventListener('astro:page-load', () => {
+        const canvas = document.querySelector<HTMLCanvasElement>('canvas.lens');
+        if (!canvas) return;
+        if (lens === undefined) lens = initLens(canvas);
+        const { bg, bgColor } = document.body.dataset;
+        if (bgColor) lens?.setColor(bgColor);
+        else lens?.setImage(bg);
+        lens?.setRotate(document.body.dataset.rotate !== 'off');
+        lens?.setBlur(Number(document.body.dataset.blur) || 0);
+      });
+    </script>
+  </body>
+</html>
