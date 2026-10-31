@@ -2,6 +2,7 @@
 import { getCollection, render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import { site } from '../../site';
+import Gallery from '../../components/Gallery.astro';
 
 export async function getStaticPaths() {
   const projects = await getCollection('projects', ({ data }) => !data.draft);
@@ -9,8 +10,21 @@ export async function getStaticPaths() {
 }
 
 const { project } = Astro.props;
-const { title, summary, tags, thumbnail, background, bgColor, blur, accent, links, date } =
-  project.data;
+const {
+  title,
+  summary,
+  tags,
+  thumbnail,
+  thumbnailPosition,
+  thumbnailZoom,
+  gallery,
+  background,
+  bgColor,
+  blur,
+  accent,
+  links,
+  date,
+} = project.data;
 const { Content } = await render(project);
 ---
 
@@ -32,7 +46,11 @@ const { Content } = await render(project);
       {
         thumbnail && (
           <div class="project-thumb" transition:name={`thumb-${project.id}`}>
-            <img src={thumbnail} alt="" />
+            <img
+              src={thumbnail}
+              alt=""
+              style={`--thumb-pos: ${thumbnailPosition}; --thumb-zoom: ${thumbnailZoom}`}
+            />
           </div>
         )
       }
@@ -56,5 +74,7 @@ const { Content } = await render(project);
     <div class="prose glass">
       <Content />
     </div>
+
+    {gallery.length > 0 && <Gallery images={gallery} />}
   </article>
 </Base>

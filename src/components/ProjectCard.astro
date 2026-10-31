@@ -6,7 +6,9 @@ interface Props {
 }
 
 const { project } = Astro.props;
-const { title, summary, tags, thumbnail, accent, date } = project.data;
+const { title, summary, tags, thumbnail, thumbnailPosition, thumbnailZoom, accent, date } =
+  project.data;
+const thumbStyle = `--thumb-pos: ${thumbnailPosition}; --thumb-zoom: ${thumbnailZoom}`;
 ---
 
 <a
@@ -16,7 +18,13 @@ const { title, summary, tags, thumbnail, accent, date } = project.data;
   data-tags={tags.join(',')}
 >
   <div class="card-thumb" transition:name={`thumb-${project.id}`}>
-    {thumbnail ? <img src={thumbnail} alt="" loading="lazy" /> : <span>{title.charAt(0)}</span>}
+    {
+      thumbnail ? (
+        <img src={thumbnail} alt="" loading="lazy" style={thumbStyle} />
+      ) : (
+        <span>{title.charAt(0)}</span>
+      )
+    }
   </div>
   <div class="card-body">
     <h3 transition:name={`title-${project.id}`}>{title}</h3>

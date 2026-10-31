@@ -10,6 +10,17 @@ const projects = defineCollection({
     tags: z.array(z.string()).default([]),
     // Paths under public/, e.g. "/backgrounds/robot-lab.jpg"
     thumbnail: z.string().optional(),
+    // Which part of the thumbnail stays in its 16:9 frame: CSS object-position,
+    // e.g. "left", "right top", "30% 20%" (0% 0% = top-left corner)
+    thumbnailPosition: z.string().default('center'),
+    // Zoom into that spot, e.g. 1.3 = 30% closer; 1 = whole image fits the frame
+    thumbnailZoom: z.number().min(1).default(1),
+    // Extra images shown in a grid below the write-up. Each is a path under public/,
+    // or { src, caption } to add a caption (also used as the image's alt text).
+    gallery: z
+      .array(z.union([z.string(), z.object({ src: z.string(), caption: z.string().optional() })]))
+      .default([])
+      .transform((items) => items.map((item) => (typeof item === 'string' ? { src: item } : item))),
     background: z.string().optional(),
     // Solid page colour, e.g. "#0f172b"; used when there's no background photo
     bgColor: z

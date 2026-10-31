@@ -5,11 +5,11 @@ date: 2026-10-29
 tags: [web, astro, css]
 accent: "#ff5f05"
 bgColor: "#0f172b"   # the Astro logo's navy
-thumbnail: /backgrounds/astro_photo.webp
+thumbnail: /thumbnails/astro_photo.webp
 links:
   - label: Source
     href: https://github.com/jjcarsello/jjcarsello.github.io
-order: 2
+order: 1
 ---
 
 ## Overview

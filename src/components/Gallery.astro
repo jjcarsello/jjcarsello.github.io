@@ -1,0 +1,92 @@
+---
+// A project's extra images: a grid of thumbnails, and a lightbox that opens the
+// clicked one full size with previous/next. Keyboard: arrows to move, Esc to close.
+interface Props {
+  images: { src: string; caption?: string }[];
+}
+
+const { images } = Astro.props;
+---
+
+<section class="gallery glass" aria-label="Gallery">
+  <h2>Gallery</h2>
+  <div class="gallery-grid">
+    {
+      images.map((image, i) => (
+        <figure>
+          <button
+            type="button"
+            class="gallery-item"
+            data-index={i}
+            aria-label={`Open image ${i + 1}${image.caption ? `: ${image.caption}` : ''}`}
+          >
+            <img src={image.src} alt={image.caption ?? ''} loading="lazy" />
+          </button>
+          {image.caption && <figcaption>{image.caption}</figcaption>}
+        </figure>
+      ))
+    }
+  </div>
+
+  <dialog class="lightbox" aria-label="Image viewer">
+    <img class="lightbox-img" src="" alt="" />
+    <p class="lightbox-caption"></p>
+    <button type="button" class="lightbox-btn lightbox-close" aria-label="Close">×</button>
+    {
+      images.length > 1 && (
+        <>
+          <button type="button" class="lightbox-btn lightbox-prev" aria-label="Previous image">‹</button>
+          <button type="button" class="lightbox-btn lightbox-next" aria-label="Next image">›</button>
+        </>
+      )
+    }
+  </dialog>
+
+  <script type="application/json" class="gallery-data" set:html={JSON.stringify(images)} />
+</section>
+
+<script>
+  interface Image {
+    src: string;
+    caption?: string;
+  }
+
+  function setupGallery(section: HTMLElement) {
+    const images: Image[] = JSON.parse(section.querySelector('.gallery-data')!.textContent!);
+    const dialog = section.querySelector<HTMLDialogElement>('.lightbox')!;
+    const img = dialog.querySelector<HTMLImageElement>('.lightbox-img')!;
+    const caption = dialog.querySelector<HTMLElement>('.lightbox-caption')!;
+    let current = 0;
+
+    function show(i: number) {
+      current = (i + images.length) % images.length;
+      img.src = images[current].src;
+      img.alt = images[current].caption ?? '';
+      caption.textContent = images[current].caption ?? '';
+      caption.hidden = !images[current].caption;
+    }
+
+    section.querySelectorAll<HTMLButtonElement>('.gallery-item').forEach((button) => {
+      button.addEventListener('click', () => {
+        show(Number(button.dataset.index));
+        dialog.showModal();
+      });
+    });
+    dialog.querySelector('.lightbox-close')!.addEventListener('click', () => dialog.close());
+    dialog.querySelector('.lightbox-prev')?.addEventListener('click', () => show(current - 1));
+    dialog.querySelector('.lightbox-next')?.addEventListener('click', () => show(current + 1));
+    dialog.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') show(current - 1);
+      if (e.key === 'ArrowRight') show(current + 1);
+    });
+    // Clicking the dark area around the image closes it
+    dialog.addEventListener('click', (e) => {
+      if (e.target === dialog) dialog.close();
+    });
+  }
+
+  // Re-run after view-transition navigations, not just the first load
+  document.addEventListener('astro:page-load', () => {
+    document.querySelectorAll<HTMLElement>('.gallery').forEach(setupGallery);
+  });
+</script>
