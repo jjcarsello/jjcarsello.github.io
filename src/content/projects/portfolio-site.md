@@ -1,6 +1,6 @@
 ---
 title: This Portfolio
-summary: A glassmorphism portfolio built with Astro, content collections, and view transitions.
+summary: A portfolio built with Astro, content collections, and view transitions.
 date: 2026-10-29
 tags: [web, astro, css]
 accent: "#ff5f05"
