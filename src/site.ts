@@ -10,6 +10,9 @@ export const site = {
   rotateGlass: false,
   // Solid colour behind project pages that don't set their own bgColor or background
   projectColor: '#111827',
+  // Your resume PDF, linked from the nav and the homepage. Drop the file at
+  // public/resume.pdf (or point this at a Google Drive link); '' hides the links.
+  resume: '/resume.pdf',
   links: [
     { label: 'GitHub', href: 'https://github.com/jjcarsello' },
     { label: 'LinkedIn', href: 'https://www.linkedin.com/' },

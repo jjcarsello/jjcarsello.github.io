@@ -16,6 +16,15 @@ const allTags = [...new Set(projects.flatMap((p) => p.data.tags))].sort();
     <h1>{site.name}</h1>
     <p class="tagline">{site.tagline}</p>
     <p>{site.intro}</p>
+    {
+      site.resume && (
+        <div class="link-row">
+          <a class="button glass" href={site.resume} target="_blank" rel="noopener">
+            View resume
+          </a>
+        </div>
+      )
+    }
   </section>
 
   <section id="projects" class="section">

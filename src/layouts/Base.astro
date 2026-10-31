@@ -64,6 +64,7 @@ const bodyStyle = [bgImage && `--bg-image: ${bgImage}`, accent && `--accent: ${a
       <nav>
         <a href="/#projects">Projects</a>
         <a href="/#contact">Contact</a>
+        {site.resume && <a href={site.resume} target="_blank" rel="noopener">Resume</a>}
       </nav>
     </header>
 
