@@ -13,7 +13,7 @@ export const site = {
   resume: '/resume.pdf',
   links: [
     { label: 'GitHub', href: 'https://github.com/jjcarsello' },
-    { label: 'LinkedIn', href: 'https://www.linkedin.com/' },
+    { label: 'LinkedIn', href: 'www.linkedin.com/in/james-carsello' },
     { label: 'Email', href: 'mailto:jamesjc4@illinois.edu' },
   ],
 };
