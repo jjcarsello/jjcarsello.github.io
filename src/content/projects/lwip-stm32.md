@@ -1,7 +1,7 @@
 ---
 title: STM32 Ethernet Implementation with FreeRTOS
 summary: Utilized FreeRTOS and a Posix LWIP C Library to support Ethernet communication with an STM32
-date: 2026-10-15
+date: 2026-9-15
 tags: [STM32 CubeMX, C, CLion, openOCD, LWIP]
 # Solid page colour; leave it out to use site.projectColor, or set `background:` to a photo
 bgColor: "#2b3342"
