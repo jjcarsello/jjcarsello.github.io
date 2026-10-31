@@ -1,69 +1,128 @@
 ---
-// A project's extra images: a grid of thumbnails, and a lightbox that opens the
-// clicked one full size with previous/next. Keyboard: arrows to move, Esc to close.
+// A project's extra media: a grid of thumbnails, and a lightbox that opens the
+// clicked one full size with previous/next. Images, video files (.mp4/.webm) and
+// YouTube/Vimeo links can be mixed. Keyboard: arrows to move, Esc to close.
 interface Props {
-  images: { src: string; caption?: string }[];
+  images: { src: string; caption?: string; poster?: string }[];
 }
 
-const { images } = Astro.props;
+type Kind = 'image' | 'video' | 'youtube' | 'vimeo';
+interface Item {
+  kind: Kind;
+  src: string; // image/video URL, or the embed URL for YouTube/Vimeo
+  thumb?: string; // what the grid shows
+  caption?: string;
+}
+
+function toItem({ src, caption, poster }: Props['images'][number]): Item {
+  const youtube = src.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([\w-]{11})/);
+  if (youtube) {
+    const id = youtube[1];
+    return {
+      kind: 'youtube',
+      src: `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0`,
+      thumb: `https://img.youtube.com/vi/${id}/hqdefault.jpg`,
+      caption,
+    };
+  }
+  const vimeo = src.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+  if (vimeo) {
+    return { kind: 'vimeo', src: `https://player.vimeo.com/video/${vimeo[1]}?autoplay=1`, thumb: poster, caption };
+  }
+  if (/\.(mp4|webm|mov|m4v)$/i.test(src)) return { kind: 'video', src, thumb: poster, caption };
+  return { kind: 'image', src, thumb: src, caption };
+}
+
+const items = Astro.props.images.map(toItem);
 ---
 
 <section class="gallery glass" aria-label="Gallery">
   <h2>Gallery</h2>
   <div class="gallery-grid">
     {
-      images.map((image, i) => (
+      items.map((item, i) => (
         <figure>
           <button
             type="button"
             class="gallery-item"
             data-index={i}
-            aria-label={`Open image ${i + 1}${image.caption ? `: ${image.caption}` : ''}`}
+            aria-label={`Open ${item.kind === 'image' ? 'image' : 'video'} ${i + 1}${item.caption ? `: ${item.caption}` : ''}`}
           >
-            <img src={image.src} alt={image.caption ?? ''} loading="lazy" />
+            {item.thumb ? (
+              <img src={item.thumb} alt={item.caption ?? ''} loading="lazy" />
+            ) : (
+              // No preview image: let the browser show the video's first frame
+              <video src={`${item.src}#t=0.1`} muted playsinline preload="metadata" />
+            )}
+            {item.kind !== 'image' && <span class="gallery-play" aria-hidden="true">▶</span>}
           </button>
-          {image.caption && <figcaption>{image.caption}</figcaption>}
+          {item.caption && <figcaption>{item.caption}</figcaption>}
         </figure>
       ))
     }
   </div>
 
-  <dialog class="lightbox" aria-label="Image viewer">
-    <img class="lightbox-img" src="" alt="" />
+  <dialog class="lightbox" aria-label="Media viewer">
+    <div class="lightbox-stage"></div>
     <p class="lightbox-caption"></p>
     <button type="button" class="lightbox-btn lightbox-close" aria-label="Close">×</button>
     {
-      images.length > 1 && (
+      items.length > 1 && (
         <>
-          <button type="button" class="lightbox-btn lightbox-prev" aria-label="Previous image">‹</button>
-          <button type="button" class="lightbox-btn lightbox-next" aria-label="Next image">›</button>
+          <button type="button" class="lightbox-btn lightbox-prev" aria-label="Previous">‹</button>
+          <button type="button" class="lightbox-btn lightbox-next" aria-label="Next">›</button>
         </>
       )
     }
   </dialog>
 
-  <script type="application/json" class="gallery-data" set:html={JSON.stringify(images)} />
+  <script type="application/json" class="gallery-data" set:html={JSON.stringify(items)} />
 </section>
 
 <script>
-  interface Image {
+  interface Item {
+    kind: 'image' | 'video' | 'youtube' | 'vimeo';
     src: string;
     caption?: string;
   }
 
   function setupGallery(section: HTMLElement) {
-    const images: Image[] = JSON.parse(section.querySelector('.gallery-data')!.textContent!);
+    const items: Item[] = JSON.parse(section.querySelector('.gallery-data')!.textContent!);
     const dialog = section.querySelector<HTMLDialogElement>('.lightbox')!;
-    const img = dialog.querySelector<HTMLImageElement>('.lightbox-img')!;
+    const stage = dialog.querySelector<HTMLElement>('.lightbox-stage')!;
     const caption = dialog.querySelector<HTMLElement>('.lightbox-caption')!;
     let current = 0;
 
+    // Builds fresh media each time, so a video or embed never keeps playing after
+    // you move on or close
     function show(i: number) {
-      current = (i + images.length) % images.length;
-      img.src = images[current].src;
-      img.alt = images[current].caption ?? '';
-      caption.textContent = images[current].caption ?? '';
-      caption.hidden = !images[current].caption;
+      current = (i + items.length) % items.length;
+      const item = items[current];
+      let media: HTMLElement;
+      if (item.kind === 'image') {
+        const img = document.createElement('img');
+        img.src = item.src;
+        img.alt = item.caption ?? '';
+        media = img;
+      } else if (item.kind === 'video') {
+        const video = document.createElement('video');
+        video.src = item.src;
+        video.controls = true;
+        video.autoplay = true;
+        video.playsInline = true;
+        media = video;
+      } else {
+        const frame = document.createElement('iframe');
+        frame.src = item.src;
+        frame.title = item.caption ?? 'Video';
+        frame.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+        frame.allowFullscreen = true;
+        media = frame;
+      }
+      media.className = `lightbox-media lightbox-${item.kind === 'image' ? 'img' : 'video'}`;
+      stage.replaceChildren(media);
+      caption.textContent = item.caption ?? '';
+      caption.hidden = !item.caption;
     }
 
     section.querySelectorAll<HTMLButtonElement>('.gallery-item').forEach((button) => {
@@ -79,10 +138,12 @@ const { images } = Astro.props;
       if (e.key === 'ArrowLeft') show(current - 1);
       if (e.key === 'ArrowRight') show(current + 1);
     });
-    // Clicking the dark area around the image closes it
+    // Clicking the dark area around the media closes it
     dialog.addEventListener('click', (e) => {
       if (e.target === dialog) dialog.close();
     });
+    // Stop any playing video when the viewer closes (Esc included)
+    dialog.addEventListener('close', () => stage.replaceChildren());
   }
 
   // Re-run after view-transition navigations, not just the first load

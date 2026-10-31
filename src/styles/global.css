@@ -401,6 +401,19 @@ main,
   overflow-x: auto;
 }
 
+/* Videos and YouTube/Vimeo embeds dropped into a write-up fill its width at 16:9 */
+.prose video,
+.prose iframe {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  height: auto;
+  border: 0;
+  border-radius: 12px;
+  background: #000;
+  margin: 1.2em 0;
+}
+
 /* ---------- Gallery ---------- */
 .gallery {
   padding: clamp(24px, 5vw, 48px);
@@ -435,11 +448,39 @@ main,
   border-color: var(--accent);
 }
 
-.gallery-item img {
+.gallery-item {
+  position: relative;
+}
+
+.gallery-item img,
+.gallery-item video {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
+}
+
+/* Play badge on video thumbnails */
+.gallery-play {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  transform: translate(-50%, -50%);
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  padding-left: 4px;
+  border-radius: 50%;
+  background: rgba(10, 14, 24, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  color: #fff;
+  font-size: 1.2rem;
+  pointer-events: none;
+  transition: background 0.2s;
+}
+
+.gallery-item:hover .gallery-play {
+  background: var(--accent);
 }
 
 .gallery figcaption {
@@ -463,12 +504,21 @@ main,
   backdrop-filter: blur(6px);
 }
 
-.lightbox-img {
+.lightbox-media {
   display: block;
   max-width: min(92vw, 1400px);
   max-height: 82vh;
   border-radius: 12px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  background: #000;
+}
+
+/* Embeds have no natural size, so give videos a 16:9 box that fits the screen */
+.lightbox-video {
+  width: min(92vw, 1400px, calc(82vh * 16 / 9));
+  aspect-ratio: 16 / 9;
+  height: auto;
+  border: 0;
 }
 
 .lightbox-caption {

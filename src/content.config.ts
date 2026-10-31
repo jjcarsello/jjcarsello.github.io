@@ -15,10 +15,16 @@ const projects = defineCollection({
     thumbnailPosition: z.string().default('center'),
     // Zoom into that spot, e.g. 1.3 = 30% closer; 1 = whole image fits the frame
     thumbnailZoom: z.number().min(1).default(1),
-    // Extra images shown in a grid below the write-up. Each is a path under public/,
-    // or { src, caption } to add a caption (also used as the image's alt text).
+    // Extra media shown in a grid below the write-up. Each is a path under public/
+    // (image, or .mp4/.webm video) or a YouTube/Vimeo link, or { src, caption, poster }
+    // to add a caption (also the alt text) and, for video files, a preview image.
     gallery: z
-      .array(z.union([z.string(), z.object({ src: z.string(), caption: z.string().optional() })]))
+      .array(
+        z.union([
+          z.string(),
+          z.object({ src: z.string(), caption: z.string().optional(), poster: z.string().optional() }),
+        ]),
+      )
       .default([])
       .transform((items) => items.map((item) => (typeof item === 'string' ? { src: item } : item))),
     background: z.string().optional(),
