@@ -2,8 +2,6 @@
 export const site = {
   name: 'James Carsello',
   tagline: 'Computer Engineer at the University of Illinois at Urbana-Champaign',
-  intro:
-    "I like to build things so I thought I'd build a site to keep track of what I build",
   // Default background for every page. Drop your photo at public/backgrounds/quad.jpg.
   background: '/backgrounds/quad-photo-light.jpg',
   // Whether scrolling the homepage turns the background glass (project pages never rotate)
